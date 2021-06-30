@@ -1,4 +1,4 @@
-name = "example"
+name = "memory"
 
 [namespace.storage]
 

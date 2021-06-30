@@ -1,4 +1,4 @@
-package example
+package memory
 
 import (
 	"github.com/beyondstorage/go-storage/v4/services"

@@ -1,6 +1,6 @@
 /*
-Package example provided support for local file system.
+Package memory provided support for memory file system.
 */
-package example
+package memory
 
 //go:generate go run -tags tools github.com/beyondstorage/go-storage/v4/cmd/definitions service.toml
