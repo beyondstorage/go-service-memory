@@ -3,6 +3,7 @@ package memory
 import (
 	"github.com/beyondstorage/go-storage/v4/services"
 	"github.com/beyondstorage/go-storage/v4/types"
+	"strings"
 )
 
 // Storage is the example client.
@@ -10,17 +11,26 @@ type Storage struct {
 	defaultPairs DefaultStoragePairs
 	features     StorageFeatures
 
+	workDir string
+	root    *object
+
 	types.UnimplementedStorager
 }
 
 // String implements Storager.String
 func (s *Storage) String() string {
-	panic("implement me")
+	return "memory"
 }
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	panic("implement me")
+	root := newObject(nil, types.ModeDir)
+	root.parent = root
+
+	return &Storage{
+		root:    root,
+		workDir: "/",
+	}, nil
 }
 
 // formatError converts errors returned by SDK into errors defined in go-storage and go-service-*.
@@ -30,5 +40,13 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return err
 	}
 
-	panic("implement me")
+	return err
+}
+
+func (s *Storage) absPath(p string) string {
+	return s.workDir + "/" + p
+}
+
+func (s *Storage) relPath(p string) string {
+	return strings.TrimPrefix(p, s.workDir)
 }
