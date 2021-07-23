@@ -1,5 +1,12 @@
-## How to create service that supports go-storage?
+# go-service-memory
 
-- Click [Use this template](https://github.com/beyondstorage/go-service-example/generate) to generate a new project.
-- Update `service.toml` to match service ability.
-- Execute `make build` to generate and build project.
+[![Build Status](https://github.com/beyondstorage/go-service-cos/workflows/Unit%20Test/badge.svg?branch=master)](https://github.com/beyondstorage/go-service-cos/actions?query=workflow%3A%22Unit+Test%22)
+[![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/Xuanwo/storage/blob/master/LICENSE)
+
+memory services support for go-storage
+
+## Install
+
+```go
+go get github.com/beyondstorage/go-service-memory
+```
