@@ -48,7 +48,7 @@ func BenchmarkStorage_Read(b *testing.B) {
 
 			b.SetBytes(v.size)
 			for i := 0; i < b.N; i++ {
-				_, _ = store.Read(path, io.Discard)
+				_, _ = store.Read(path, ioutil.Discard)
 			}
 		})
 	}
