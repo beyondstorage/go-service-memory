@@ -32,6 +32,9 @@ test:
 integration_test:
 	go test -race -count=1 -covermode=atomic -v ./tests
 
+benchmark_test:
+	go test -bench=.
+
 tidy:
 	go mod tidy
 	go mod verify
