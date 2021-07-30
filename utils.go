@@ -15,6 +15,10 @@ type Storage struct {
 	root    *object
 
 	types.UnimplementedStorager
+	types.UnimplementedAppender
+	types.UnimplementedCopier
+	types.UnimplementedDirer
+	types.UnimplementedMover
 }
 
 // String implements Storager.String

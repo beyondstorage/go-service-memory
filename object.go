@@ -81,7 +81,17 @@ func (o *object) insertChildByPath(path string) *object {
 	ps := strings.Split(path, "/")
 	last := len(ps) - 1
 
-	for _, v := range ps[:last] {
+	p = o.makeDirAll(ps[:last])
+	if p == nil {
+		return nil
+	}
+
+	return p.insertChild(ps[last], newObject(p, types.ModeRead))
+}
+
+func (o *object) makeDirAll(ps []string) *object {
+	p := o
+	for _, v := range ps {
 		if v == "" {
 			continue
 		}
@@ -97,5 +107,5 @@ func (o *object) insertChildByPath(path string) *object {
 
 		p = ro
 	}
-	return p.insertChild(ps[last], newObject(p, types.ModeRead))
+	return p
 }
