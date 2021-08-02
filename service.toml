@@ -1,6 +1,7 @@
 name = "memory"
 
 [namespace.storage]
+implement = ["copier", "mover", "appender", "direr"]
 
 [namespace.storage.op.create]
 optional = ["object_mode"]
