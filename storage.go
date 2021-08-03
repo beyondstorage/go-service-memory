@@ -162,7 +162,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
 	name, ro := s.root.getChildByPath(s.absPath(path))
-	if name == "" {
+	if name == "" && ro == nil {
 		return nil, services.ErrObjectNotExist
 	}
 
