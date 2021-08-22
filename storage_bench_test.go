@@ -12,7 +12,7 @@ import (
 )
 
 func setup(b *testing.B, size int64) (store *Storage, path string) {
-	root := newObject(nil, types.ModeDir)
+	root := newObject("", nil, types.ModeDir)
 	root.parent = root
 
 	store = &Storage{

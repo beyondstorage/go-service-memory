@@ -11,15 +11,17 @@ type object struct {
 	mode   types.ObjectMode
 	length int64
 
+	name   string
 	parent *object
 	mu     sync.Mutex
 	child  map[string]*object
 	data   []byte
 }
 
-func newObject(parent *object, mode types.ObjectMode) *object {
+func newObject(name string, parent *object, mode types.ObjectMode) *object {
 	return &object{
 		mode:   mode,
+		name:   name,
 		parent: parent,
 		child:  make(map[string]*object),
 	}
@@ -59,7 +61,7 @@ func (o *object) insertChild(name string, c *object) *object {
 	return c
 }
 
-func (o *object) getChildByPath(path string) (name string, ro *object) {
+func (o *object) getObjectByPath(path string) (ro *object) {
 	ro = o
 	ps := strings.Split(path, "/")
 
@@ -67,13 +69,12 @@ func (o *object) getChildByPath(path string) (name string, ro *object) {
 		if v == "" {
 			continue
 		}
-		name = v
 		ro = ro.getChild(v)
 		if ro == nil {
-			return "", nil
+			return nil
 		}
 	}
-	return name, ro
+	return ro
 }
 
 func (o *object) insertChildByPath(path string) *object {
@@ -86,7 +87,7 @@ func (o *object) insertChildByPath(path string) *object {
 		return nil
 	}
 
-	return p.insertChild(ps[last], newObject(p, types.ModeRead))
+	return p.insertChild(ps[last], newObject(ps[last], p, types.ModeRead))
 }
 
 func (o *object) makeDirAll(ps []string) *object {
@@ -98,7 +99,7 @@ func (o *object) makeDirAll(ps []string) *object {
 		ro := p.getChild(v)
 		// If child not exist, we can create a new dir object.
 		if ro == nil {
-			ro = p.insertChild(v, newObject(p, types.ModeDir))
+			ro = p.insertChild(v, newObject(v, p, types.ModeDir))
 		}
 		// If child exist but not a dir, we should return false to indict failed.
 		if !ro.mode.IsDir() {
