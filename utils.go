@@ -1,9 +1,11 @@
 package memory
 
 import (
+	"path"
+	"strings"
+
 	"github.com/beyondstorage/go-storage/v4/services"
 	"github.com/beyondstorage/go-storage/v4/types"
-	"strings"
 )
 
 // Storage is the example client.
@@ -28,7 +30,7 @@ func (s *Storage) String() string {
 
 // NewStorager will create Storager only.
 func NewStorager(pairs ...types.Pair) (types.Storager, error) {
-	root := newObject(nil, types.ModeDir)
+	root := newObject("", nil, types.ModeDir)
 	root.parent = root
 
 	return &Storage{
@@ -48,7 +50,12 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 }
 
 func (s *Storage) absPath(p string) string {
-	return s.workDir + "/" + p
+	p = path.Clean(p)
+	if path.IsAbs(p) {
+		return p
+	}
+
+	return path.Join(s.workDir, p)
 }
 
 func (s *Storage) relPath(p string) string {

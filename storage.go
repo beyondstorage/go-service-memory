@@ -2,10 +2,11 @@ package memory
 
 import (
 	"context"
-	"github.com/beyondstorage/go-storage/v4/services"
-	. "github.com/beyondstorage/go-storage/v4/types"
 	"io"
 	"strings"
+
+	"github.com/beyondstorage/go-storage/v4/services"
+	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
 func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
@@ -16,12 +17,12 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	rs := s.absPath(src)
 	rd := s.absPath(dst)
 
-	_, ro := s.root.getChildByPath(rs)
+	ro := s.root.getObjectByPath(rs)
 	if ro == nil {
 		return services.ErrObjectNotExist
 	}
 
-	_, r := s.root.getChildByPath(rd)
+	r := s.root.getObjectByPath(rd)
 	if r != nil && r.mode.IsDir() {
 		return services.ErrObjectModeInvalid
 	}
@@ -78,17 +79,17 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 }
 
 func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete) (err error) {
-	name, child := s.root.getChildByPath(s.absPath(path))
-	if child == nil {
+	o := s.root.getObjectByPath(s.absPath(path))
+	if o == nil {
 		return nil
 	}
-	child.parent.removeChild(name)
+	o.parent.removeChild(o.name)
 	return nil
 }
 
 func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
 	fn := NextObjectFunc(func(ctx context.Context, page *ObjectPage) error {
-		_, o := s.root.getChildByPath(s.absPath(path))
+		o := s.root.getObjectByPath(s.absPath(path))
 		if o == nil {
 			// If the object is not exist, we should return IterateDone instead.
 			return IterateDone
@@ -126,25 +127,25 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt pairStor
 	rs := s.absPath(src)
 	rd := s.absPath(dst)
 
-	names, rso := s.root.getChildByPath(rs)
+	rso := s.root.getObjectByPath(rs)
 	if rso == nil {
 		return services.ErrObjectNotExist
 	}
 
-	_, rdo := s.root.getChildByPath(rd)
+	rdo := s.root.getObjectByPath(rd)
 	if rdo != nil && rdo.mode.IsDir() {
 		return services.ErrObjectModeInvalid
 	}
 
 	ps := strings.Split(dst, "/")
-	rso.parent.removeChild(names)
+	rso.parent.removeChild(rso.name)
 	rso.parent.insertChild(ps[len(ps)-1], rso)
 	return
 }
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
-	name, o := s.root.getChildByPath(s.absPath(path))
-	if name == "" {
+	o := s.root.getObjectByPath(s.absPath(path))
+	if o == nil {
 		return 0, services.ErrObjectNotExist
 	}
 
@@ -161,8 +162,8 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 }
 
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
-	name, ro := s.root.getChildByPath(s.absPath(path))
-	if name == "" && ro == nil {
+	ro := s.root.getObjectByPath(s.absPath(path))
+	if ro == nil {
 		return nil, services.ErrObjectNotExist
 	}
 
@@ -193,7 +194,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 }
 
 func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
-	_, ro := s.root.getChildByPath(o.ID)
+	ro := s.root.getObjectByPath(o.ID)
 	if ro == nil {
 		ro = s.root.insertChildByPath(o.ID)
 		if ro == nil {
