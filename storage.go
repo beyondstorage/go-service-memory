@@ -180,14 +180,16 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	if o == nil {
 		return 0, services.ErrObjectModeInvalid
 	}
-
-	o.length = size
 	o.mode = ModeRead
 
 	o.data = make([]byte, size)
 	read, err := r.Read(o.data)
+
+	// Update o.length even after write failed.
+	o.data = o.data[:read]
+	o.length = int64(read)
 	if err != nil {
-		return int64(read), nil
+		return int64(read), err
 	}
 
 	return int64(read), nil
