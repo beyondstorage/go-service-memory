@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/beyondstorage/go-storage/v4/pkg/iowrap"
 	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
 )
@@ -154,6 +155,8 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 		offset = opt.Offset
 	}
 
+	w = iowrap.CallbackWriter(w, opt.IoCallback)
+
 	written, err := w.Write(o.data[offset:])
 	if err != nil {
 		return int64(written), err
@@ -184,6 +187,8 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	o.mode = ModeRead
 	o.data = make([]byte, size)
 
+	r = iowrap.CallbackReader(r, opt.IoCallback)
+
 	// TODO: we need to add integration tests for this case.
 	read, err := r.Read(o.data)
 	// Update o.length even after read met error.
@@ -205,6 +210,7 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 			return 0, services.ErrObjectModeInvalid
 		}
 	}
+
 	buf := make([]byte, size)
 	read, err := r.Read(buf)
 	ro.data = append(ro.data, buf[:read]...)
