@@ -154,8 +154,9 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 	if opt.HasOffset {
 		offset = opt.Offset
 	}
-
-	w = iowrap.CallbackWriter(w, opt.IoCallback)
+	if opt.HasIoCallback {
+		w = iowrap.CallbackWriter(w, opt.IoCallback)
+	}
 
 	written, err := w.Write(o.data[offset:])
 	if err != nil {
@@ -187,7 +188,9 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	o.mode = ModeRead
 	o.data = make([]byte, size)
 
-	r = iowrap.CallbackReader(r, opt.IoCallback)
+	if opt.HasIoCallback {
+		r = iowrap.CallbackReader(r, opt.IoCallback)
+	}
 
 	// TODO: we need to add integration tests for this case.
 	read, err := r.Read(o.data)
