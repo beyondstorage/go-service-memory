@@ -1,7 +1,9 @@
 package memory
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"strings"
 
@@ -180,26 +182,36 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 }
 
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt pairStorageWrite) (n int64, err error) {
+	if r == nil && size == 0 {
+		r = bytes.NewReader([]byte{})
+	} else if r == nil && size != 0 {
+		return 0, fmt.Errorf("reader is nil but size is not nil")
+	}
+
 	o := s.root.insertChildByPath(s.absPath(path))
 	if o == nil {
 		return 0, services.ErrObjectModeInvalid
 	}
 
-	o.mode = ModeRead
-	o.data = make([]byte, size)
-
 	if opt.HasIoCallback {
 		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
 
-	// TODO: we need to add integration tests for this case.
-	read, err := r.Read(o.data)
-	// Update o.length even after read met error.
-	o.data = o.data[:read]
-	o.length = int64(read)
+	var read int
 
-	if err != nil {
-		return int64(read), err
+	if size != 0 {
+		o.mode = ModeRead
+		o.data = make([]byte, size)
+
+		// TODO: we need to add integration tests for this case.
+		read, err = r.Read(o.data)
+		// Update o.length even after read met error.
+		o.data = o.data[:read]
+		o.length = int64(read)
+
+		if err != nil {
+			return int64(read), err
+		}
 	}
 
 	return int64(read), nil
