@@ -199,7 +199,6 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	if size == 0 {
 		return size, nil
 	}
-	
 	o.mode = ModeRead
 	o.data = make([]byte, size)
 
