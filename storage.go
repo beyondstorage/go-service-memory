@@ -196,11 +196,12 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
 
+	o.mode = ModeRead
+	o.data = make([]byte, size)
+
 	if size == 0 {
 		return size, nil
 	}
-	o.mode = ModeRead
-	o.data = make([]byte, size)
 
 	// TODO: we need to add integration tests for this case.
 	read, err := r.Read(o.data)
