@@ -45,7 +45,7 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	o = NewObject(s, true)
 	o.ID = s.absPath(path)
-	o.Path = s.relPath(path)
+	o.Path = path
 	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 		o.Mode = ModeDir
 	}
@@ -61,7 +61,7 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 
 	o = NewObject(s, true)
 	o.ID = s.absPath(path)
-	o.Path = s.relPath(path)
+	o.Path = path
 	o.Mode = ModeRead | ModeAppend
 	o.SetAppendOffset(0)
 
@@ -75,7 +75,7 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 
 	o = NewObject(s, true)
 	o.ID = s.absPath(path)
-	o.Path = s.relPath(path)
+	o.Path = path
 	o.Mode |= ModeDir
 	return o, nil
 }
@@ -159,7 +159,13 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 		w = iowrap.CallbackWriter(w, opt.IoCallback)
 	}
 
-	written, err := w.Write(o.data[offset:])
+	var written int
+	if !opt.HasSize {
+		written, err = w.Write(o.data[offset:])
+	} else {
+		written, err = w.Write(o.data[offset : offset+opt.Size])
+	}
+
 	if err != nil {
 		return int64(written), err
 	}
@@ -174,7 +180,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 
 	o = NewObject(s, true)
 	o.ID = s.absPath(path)
-	o.Path = s.relPath(path)
+	o.Path = path
 	o.Mode = ro.mode
 	o.SetContentLength(ro.length)
 	return o, nil
